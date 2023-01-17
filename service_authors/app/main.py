@@ -15,7 +15,7 @@ authors: list[Author] = []
 def add_new_author(context: CreateAuthorModel):
     id_ = len(authors)
     authors.append(Author(
-        id_,
+        str(id_),
         context.name,
         context.username,
         context.email,
@@ -29,7 +29,7 @@ app = FastAPI()
 # Jaeger
 
 resource = Resource(attributes={
-    SERVICE_NAME: "authors-service"
+    SERVICE_NAME: "service_authors"
 })
 
 jaeger_exporter = JaegerExporter(
