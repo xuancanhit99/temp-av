@@ -1,0 +1,125 @@
+{
+    "$schema": "https://www.krakend.io/schema/v3.json",
+    "version": 3,
+    "extra_config": {
+        "router": {
+          "return_error_msg": false
+        },
+        "security/cors": {
+          "allow_origins": ["*"],
+          "allow_methods": ["POST", "GET"],
+          "allow_headers": ["Origin", "Authorization", "Content-Type"],
+          "expose_headers": ["Content-Length"],
+          "max_age": "12h"
+        }
+    },
+    "endpoints": [
+        {
+            "endpoint": "/v1/authors",
+            "method": "GET",
+            "backend": [{
+                "url_pattern": "/api/authors",
+                "method": "GET",
+                "host": ["http://authors"],
+                "is_collection": true,
+                "mapping": {
+                    "collection": "authors"
+                }
+            }]
+        },
+        {
+            "endpoint": "/v1/posts",
+            "method": "GET",
+            "backend": [{
+                "url_pattern": "/api/posts",
+                "method": "GET",
+                "host": ["http://posts"],
+                "is_collection": true,
+                "mapping": {
+                    "collection": "posts"
+                }
+            }]
+        },
+        {
+            "endpoint": "/v1/add-author",
+            "method": "POST",
+            "backend": [{
+                "url_pattern": "/api/add-author",
+                "method": "POST",
+                "host": ["http://authors"]
+            }]
+        },
+        {
+            "endpoint": "/v1/author/{id}",
+            "method": "GET",
+            "output_encoding": "no-op",
+            "backend": [{
+                "encoding": "no-op",
+                "url_pattern": "/api/author/{id}",
+                "method": "GET",
+                "host": ["http://authors"]
+            }]
+        },
+        {
+            "endpoint": "/v1/data",
+            "method": "GET",
+            "input_headers": ["*"],
+            "output_encoding": "json",
+            "backend": [
+                {
+                    "url_pattern": "/api/authors",
+                    "method": "GET",
+                    "sd": "static",
+                    "host": ["http://authors"],
+                    "is_collection": true,
+                    "mapping": {
+                        "collection": "authors"
+                    }
+                },
+                                {
+                    "url_pattern": "/api/posts",
+                    "method": "GET",
+                    "sd": "static",
+                    "host": ["http://posts"],
+                    "is_collection": true,
+                    "mapping": {
+                        "collection": "posts"
+                    }
+                }
+            ],
+            "extra_config": {
+                "auth/validator": {
+                  "alg": "HS256",
+                  "roles": ["user", "admin"],
+                  "roles_key": "roles",
+                  "jwk_local_path": "jwk_private_key.json",
+                  "disable_jwk_security": true,
+                  "operation_debug": true
+                }
+            }
+        },
+        {
+            "endpoint": "/v1/login",
+            "method":  "POST",
+            "backend": [
+              {
+                "url_pattern": "/api/login",
+                "encoding": "safejson",
+                "host": [
+                    "http://auth_s:8000"
+                ]
+              }
+            ],
+            "extra_config": {
+              "auth/signer": {
+                "alg": "HS256",
+                "jwk_local_path": "jwk_private_key.json",
+                "keys_to_sign": ["access_token"],
+                "disable_jwk_security": true,
+                "full": false,
+                "kid": "sim2"
+              }
+            }
+          }       
+    ]
+}
