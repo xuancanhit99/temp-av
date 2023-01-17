@@ -61,4 +61,4 @@ jobs:
         with:
           context: ./service_authors
           push: true
-          tags: ledhcg/service_authors:latest
+          tags: xuancanhit99/service_authors:latest
