@@ -17,7 +17,7 @@ jobs:
 
         # Test container
       - name: Run Docker Container
-        run: docker-compose run --rm authors sh
+        run: docker-compose run -d ledhcg/temp-av
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
