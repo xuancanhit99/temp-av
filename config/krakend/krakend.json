@@ -106,7 +106,7 @@
                 "url_pattern": "/api/login",
                 "encoding": "safejson",
                 "host": [
-                    "http://auth_s:8000"
+                    "http://authentication:8000"
                 ]
               }
             ],
