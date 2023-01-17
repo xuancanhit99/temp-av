@@ -9,7 +9,9 @@ from fastapi import FastAPI, HTTPException
 from app.author import Author, CreateAuthorModel
 from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
 
-authors: list[Author] = []
+authors: list[Author] = [
+
+]
 
 
 def add_new_author(context: CreateAuthorModel):
@@ -62,6 +64,8 @@ async def startup():
 
 @app.get("/api/authors")
 async def get_authors():
+    if authors == ['']:
+        return []
     return authors
 
 
