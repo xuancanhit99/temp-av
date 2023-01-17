@@ -24,21 +24,12 @@ jobs:
       # - name: Push tag to Docker Hub
       #   run: docker push ledhcg/temp-av:latest
 
-      - name: Build
-        task:
-          # Mount a secret which defines DOCKER_USERNAME and DOCKER_PASSWORD
-          # environment variables.
-          # For info on creating secrets, see:
-          # https://docs.semaphoreci.com/essentials/using-secrets/
-          secrets:
-            - name: ledhcg
-          jobs:
-            - name: Docker build
-              run:
-                # Authenticate with Docker Hub
-                - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
-                - checkout
-                - docker-compose build
-                - docker tag ledhcg:latest "$DOCKER_USERNAME"/ledhcg:latest
-                - docker push "$DOCKER_USERNAME"/ledhcg:latest
-                - docker images
+      - name: Docker build
+        run:
+          # Authenticate with Docker Hub
+          - echo "${DOCKER_PASSWORD}" | docker login -u "${DOCKER_USERNAME}" --password-stdin
+          - checkout
+          - docker-compose build
+          - docker tag ledhcg:latest "$DOCKER_USERNAME"/ledhcg:latest
+          - docker push "$DOCKER_USERNAME"/ledhcg:latest
+          - docker images
