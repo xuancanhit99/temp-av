@@ -1,0 +1,96 @@
+version: '3.9'
+
+services:
+  authors:
+    container_name: ledhg-authors
+    build: ./service_authors
+    ports:
+      - "8000:80"
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost/__health" ]
+      interval: 10s
+      timeout: 30s
+      retries: 5
+      start_period: 5s
+
+  posts:
+    container_name: ledhg-posts
+    build: ./service_posts
+    ports:
+      - "8001:80"
+
+  producers:
+    container_name: ledhg-producers
+    build: ./service_producers
+    restart: always
+    tty: true
+    ports:
+      - 8002:8000
+  
+  consumers:
+    container_name: ledhg-consumers
+    build: ./service_consumers
+
+  authentication:
+    container_name: ledhg-authentication
+    build: ./service_authentication
+    volumes:
+      - ./service_authentication:/code
+    ports:
+      - "8010:8000"
+    environment:
+      JWT_SECRETE: jwt_secrete
+    depends_on:
+      - rabbitmq
+
+  krakend_ce:
+    container_name: ledhg-krakend
+    image: devopsfaith/krakend:watch
+    volumes:
+      - ./config/krakend:/etc/krakend
+    ports:
+      - "8080:8080"
+    command: [ "run", "-d", "-c", "/etc/krakend/krakend.json" ]
+    depends_on:
+      - authors
+      - posts
+      - authentication
+
+  rabbitmq:
+    container_name: ledhg-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_ERLANG_COOKIE: "TESTVOLUME"
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+      RABBITMQ_DEFAULT_VHOST: "/"
+    image: rabbitmq:3-management-alpine
+    ports:
+      - 5672:5672
+      - 15672:15672
+    tty: true
+    command: bash -c "sleep 10; rabbitmq-server;"
+
+  jaeger:
+    container_name: ledhg-jaeger
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "6831:6831/udp"
+      - "16686:16686"
+
+  prometheus:
+    container_name: ledhg-prometheus
+    image: prom/prometheus
+    volumes:
+      - ./config/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+
+  grafana:
+    container_name: ledhg-grafana
+    image: grafana/grafana-oss
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    volumes:
+      - ./config/grafana/datasources:/etc/grafana/provisioning/datasources

@@ -2,27 +2,63 @@ name: Docker Image CI
 
 on:
   push:
-    branches: ["master"]
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
 
 jobs:
-  build_and_push:
+  test:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Start containers
+        run: docker-compose -f "docker-compose.test.yml" up -d --build
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          cd tests
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Test with pytest
+        run: |
+          pytest
+      - name: Stop containers
+        if: always()
+        run: docker-compose -f "docker-compose.yml" down
+
+  load-image:
+    needs: tests
+
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-
-      # Build Image
-      - name: Build Docker Image
-        run: docker-compose -p ledhcg/temp-av build
-
-        # Test container
-      - name: Run Docker Container
-        run: docker run -d ledhcg/temp-av
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
         with:
-          python-version: "3.9"
-      - name: Install requirements
-        run: pip install pytest requests
-      - name: Run tests
-        run: pytest
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        if: github.event_name == 'push'
+        with:
+          context: ./service_authors
+          push: true
+          tags: ledhcg/service_authors:latest
