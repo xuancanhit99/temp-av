@@ -15,7 +15,7 @@
     },
     "endpoints": [
         {
-            "endpoint": "/v1/authors",
+            "endpoint": "/api/authors",
             "method": "GET",
             "backend": [{
                 "url_pattern": "/api/authors",
@@ -28,7 +28,7 @@
             }]
         },
         {
-            "endpoint": "/v1/posts",
+            "endpoint": "/api/posts",
             "method": "GET",
             "backend": [{
                 "url_pattern": "/api/posts",
@@ -41,7 +41,7 @@
             }]
         },
         {
-            "endpoint": "/v1/add-author",
+            "endpoint": "/api/add-author",
             "method": "POST",
             "backend": [{
                 "url_pattern": "/api/add-author",
@@ -50,7 +50,7 @@
             }]
         },
         {
-            "endpoint": "/v1/author/{id}",
+            "endpoint": "/api/author/{id}",
             "method": "GET",
             "output_encoding": "no-op",
             "backend": [{
@@ -61,7 +61,7 @@
             }]
         },
         {
-            "endpoint": "/v1/data",
+            "endpoint": "/api/data",
             "method": "GET",
             "input_headers": ["*"],
             "output_encoding": "json",
@@ -99,7 +99,7 @@
             }
         },
         {
-            "endpoint": "/v1/login",
+            "endpoint": "/api/login",
             "method":  "POST",
             "backend": [
               {
