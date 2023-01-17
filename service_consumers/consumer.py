@@ -18,16 +18,11 @@ def callback(channel, method, properties, body):
 
 def main():
     print(" [*] Connecting to server ...")
-    # RabbitMQサーバと接続
     connection = pika.BlockingConnection(
         pika.ConnectionParameters(host="rabbitmq"))
-    # チャンネルの確立
     channel = connection.channel()
-    # メッセージを受信するためのキュー(task_queue)が存在することを確認
     channel.queue_declare(queue="task_queue", durable=True)
-    # 前のメッセージの処理が完了してACKが返るまで次のメッセージを送信しないようにするオプション
     channel.basic_qos(prefetch_count=1)
-    # キュー(task_queue)にcallback関数をサブスクライブしてメッセージ受信のたびに実行
     channel.basic_consume(queue="task_queue", on_message_callback=callback)
 
     try:
